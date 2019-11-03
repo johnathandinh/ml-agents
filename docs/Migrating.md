@@ -1,25 +1,77 @@
 # Migrating
 
+## Migrating from ML-Agents toolkit v0.9 to v0.10
+
+### Important Changes
+* We have updated the C# code in our repository to be in line with Unity Coding Conventions.  This has changed the name of some public facing classes and enums.
+* The example environments have been updated. If you were using these environments to benchmark your training, please note that the resulting rewards may be slightly different in v0.10.
+
+#### Steps to Migrate
+* `UnitySDK/Assets/ML-Agents/Scripts/Communicator.cs` and its class `Communicator` have been renamed to `UnitySDK/Assets/ML-Agents/Scripts/ICommunicator.cs` and `ICommunicator` respectively.
+* The `SpaceType` Enums `discrete`, and `continuous` have been renamed to `Discrete` and `Continuous`.
+* We have removed the `Done` call as well as the capacity to set `Max Steps` on the Academy. Therefore an AcademyReset will never be triggered from C# (only from Python). If you want to reset the simulation after a fixed number of steps, or when an event in the simulation occurs, we recommend looking at our multi-agent example environments (such as BananaCollector). In our examples, groups of Agents can be reset through an "Area" that can reset groups of Agents.
+* The import for `mlagents.envs.UnityEnvironment` was removed. If you are using the Python API, change `from mlagents.envs import UnityEnvironment` to `from mlagents.envs.environment import UnityEnvironment`.
+
+
+## Migrating from ML-Agents toolkit v0.8 to v0.9
+
+### Important Changes
+* We have changed the way reward signals (including Curiosity) are defined in the
+`trainer_config.yaml`.
+* When using multiple environments, every "step" is recorded in TensorBoard.
+* The steps in the command line console corresponds to a single step of a single environment.
+Previously, each step corresponded to one step for all environments (i.e., `num_envs` steps).
+
+#### Steps to Migrate
+* If you were overriding any of these following parameters in your config file, remove them
+from the top-level config and follow the steps below:
+  * `gamma`: Define a new `extrinsic` reward signal and set it's `gamma` to your new gamma.
+  * `use_curiosity`, `curiosity_strength`, `curiosity_enc_size`: Define a `curiosity` reward signal
+  and set its `strength` to `curiosity_strength`, and `encoding_size` to `curiosity_enc_size`. Give it
+  the same `gamma` as your `extrinsic` signal to mimic previous behavior.
+See [Reward Signals](Reward-Signals.md) for more information on defining reward signals.
+* TensorBoards generated when running multiple environments in v0.8 are not comparable to those generated in
+v0.9 in terms of step count. Multiply your v0.8 step count by `num_envs` for an approximate comparison.
+You may need to change `max_steps` in your config as appropriate as well.
+
+## Migrating from ML-Agents toolkit v0.7 to v0.8
+
+### Important Changes
+* We have split the Python packges into two seperate packages `ml-agents` and `ml-agents-envs`.
+* `--worker-id` option of `learn.py` has been removed, use `--base-port` instead if you'd like to run multiple instances of `learn.py`.
+
+#### Steps to Migrate
+* If you are installing via PyPI, there is no change.
+* If you intend to make modifications to `ml-agents` or `ml-agents-envs` please check the Installing for Development in the [Installation documentation](Installation.md).
+
+## Migrating from ML-Agents toolkit v0.6 to v0.7
+
+### Important Changes
+* We no longer support TFS and are now using the [Unity Inference Engine](Unity-Inference-Engine.md)
+
+#### Steps to Migrate
+* Make sure to remove the `ENABLE_TENSORFLOW` flag in your Unity Project settings
+
 ## Migrating from ML-Agents toolkit v0.5 to v0.6
 
 ### Important Changes
 
-* Brains are now Scriptable Objects instead of MonoBehaviors. 
+* Brains are now Scriptable Objects instead of MonoBehaviors.
 * You can no longer modify the type of a Brain. If you want to switch
   between `PlayerBrain` and `LearningBrain` for multiple agents,
   you will need to assign a new Brain to each agent separately.
-  __Note:__ You can pass the same Brain to multiple agents in a scene by 
+  __Note:__ You can pass the same Brain to multiple agents in a scene by
 leveraging Unity's prefab system or look for all the agents in a scene
 using the search bar of the `Hierarchy` window with the word `Agent`.
 
 * We replaced the **Internal** and **External** Brain with **Learning Brain**.
   When you need to train a model, you need to drag it into the `Broadcast Hub`
   inside the `Academy` and check the `Control` checkbox.
-* We removed the `Broadcast` checkbox of the Brain, to use the broadcast 
+* We removed the `Broadcast` checkbox of the Brain, to use the broadcast
   functionality, you need to drag the Brain into the `Broadcast Hub`.
-* When training multiple Brains at the same time, each model is now stored 
+* When training multiple Brains at the same time, each model is now stored
   into a separate model file rather than in the same file under different
-  graph scopes. 
+  graph scopes.
 * The **Learning Brain** graph scope, placeholder names, output names and custom
   placeholders can no longer be modified.
 
@@ -36,9 +88,9 @@ using the search bar of the `Hierarchy` window with the word `Agent`.
   * Agents have a `Brain` field in the Inspector, you need to drag the
     appropriate Brain ScriptableObject in it.
   * The Academy has a `Broadcast Hub` field in the inspector, which is
-    list of brains used in the scene.  To train or control your Brain 
-    from the `mlagents-learn` Python script, you need to drag the relevant 
-    `LearningBrain` ScriptableObjects used in your scene into entries 
+    list of brains used in the scene.  To train or control your Brain
+    from the `mlagents-learn` Python script, you need to drag the relevant
+    `LearningBrain` ScriptableObjects used in your scene into entries
     into this list.
 
 ## Migrating from ML-Agents toolkit v0.4 to v0.5
